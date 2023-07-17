@@ -6,9 +6,6 @@ const transactionSchema = mongoose.Schema({
     receipientAddress: {
         type: String
     },
-    receipientAddress: {
-        type: String
-    },
     amount: {
         type: mongoose.Decimal128,
         required:true
