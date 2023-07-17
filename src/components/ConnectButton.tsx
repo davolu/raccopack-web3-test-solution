@@ -19,6 +19,8 @@ import { useDisclosure, useToast } from "@chakra-ui/react";
 import { injected } from "../config/wallets";
 import abi from "./abi.json";
 import { AbiItem } from "web3-utils";
+import axios from 'axios';
+
 
 //Binance Smart Chain provider
 const BSC_PROVIDER  = 'https://bsc-dataseed1.binance.org';
@@ -82,6 +84,30 @@ export default function ConnectButton() {
 
     onOpen();
   }
+  
+  //save transaction history to local db after successful transaction
+  const saveTransactionHistory = async () => {
+    const data = {
+      senderAddress: account,
+      receipientAddress: recieverAdd,
+      amount:  Web3.utils.toWei(sendAmount.toString(), "ether"),
+    };
+  
+    try {
+      //http://localhost:4000/api/v1/transaction/store - is the location, this is a test. For a prod,
+      // I'd prefer to use redux for things like this. 
+      await axios.post('http://localhost:4000/api/v1/transaction/store', data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      onClose();
+      valueload();
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const sendBaby = useCallback(async () => {
     const web3 = new Web3(BSC_PROVIDER);
@@ -113,7 +139,7 @@ export default function ConnectButton() {
           if (error) {
             return;
           }
-
+          saveTransactionHistory(); //save to local db
           console.log(`Transaction data: ${transaction?.input}`);
         });
       }
